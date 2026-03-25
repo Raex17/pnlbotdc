@@ -8,6 +8,7 @@ const {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
+  MessageFlags,
 } = require('discord.js');
 const https  = require('https');
 const http   = require('http');
@@ -154,7 +155,7 @@ const data = new SlashCommandBuilder()
 // ── Command execute ───────────────────────────────────────────────────────────
 
 async function execute(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const txSig    = interaction.options.getString('txhash');
   const bgAttach = interaction.options.getAttachment('bg');
@@ -206,7 +207,7 @@ async function handleInteraction(interaction) {
   const session = sessions.get(msgId);
 
   if (!session) {
-    return interaction.reply({ content: 'Session expired. Please run `/pnl` again.', ephemeral: true });
+    return interaction.reply({ content: 'Session expired. Please run `/pnl` again.', flags: MessageFlags.Ephemeral });
   }
 
   // Update session state

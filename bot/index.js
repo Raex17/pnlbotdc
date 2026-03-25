@@ -2,20 +2,18 @@
 
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
-const { Client, GatewayIntentBits, REST, Routes, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, REST, Routes, Events, MessageFlags } = require('discord.js');
 
-const pnlCommand      = require('./commands/pnl');
-const setbgCommand    = require('./commands/setbg');
+const pnlCommand = require('./commands/pnl');
+const setbgCommand = require('./commands/setbg');
 const trendingCommand = require('./commands/trending');
-const convertCommand  = require('./commands/convert');
-const cookCommand     = require('./commands/cook');
-
-// ── Register slash commands ───────────────────────────────────────────────────
+const convertCommand = require('./commands/convert');
+const cookCommand = require('./commands/cook');
 
 async function registerCommands() {
-  const token    = process.env.DISCORD_TOKEN;
+  const token = process.env.DISCORD_TOKEN;
   const clientId = process.env.CLIENT_ID;
-  const guildId  = process.env.GUILD_ID;
+  const guildId = process.env.GUILD_ID;
 
   if (!token || !clientId || !guildId) {
     console.error('Missing DISCORD_TOKEN, CLIENT_ID, or GUILD_ID in .env');
@@ -39,8 +37,6 @@ async function registerCommands() {
   }
 }
 
-// ── Discord client ────────────────────────────────────────────────────────────
-
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -49,18 +45,18 @@ const client = new Client({
   ],
 });
 
-client.once('ready', () => {
-  console.log(`Ready — logged in as ${client.user.tag}`);
+client.once(Events.ClientReady, () => {
+  console.log(`Ready - logged in as ${client.user.tag}`);
 });
 
-client.on('messageCreate', async (message) => {
+client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
   if (message.content.toLowerCase().startsWith('.cv ')) {
     await convertCommand.handleMessage(message).catch(console.error);
   }
 });
 
-client.on('interactionCreate', async (interaction) => {
+client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand()) {
       const name = interaction.commandName;
@@ -83,7 +79,7 @@ client.on('interactionCreate', async (interaction) => {
     }
   } catch (err) {
     console.error('Interaction error:', err);
-    const reply = { content: `❌ Unexpected error: ${err.message}`, ephemeral: true };
+    const reply = { content: `Error: ${err.message}`, flags: MessageFlags.Ephemeral };
     try {
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(reply);
@@ -93,8 +89,6 @@ client.on('interactionCreate', async (interaction) => {
     } catch {}
   }
 });
-
-// ── Start ─────────────────────────────────────────────────────────────────────
 
 (async () => {
   await registerCommands();
